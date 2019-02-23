@@ -11,6 +11,7 @@
     "interface-over-type-literal": false,
     "max-classes-per-file": false,
     "member-access": false,
+    "no-shadowed-variable": false,
     "no-unused-expression": false,
     "prefer-const": false,
     "quotemark": [true, "single"],
