@@ -7,7 +7,12 @@
   "jsRules": {},
   "rules": {
     "array-type": false,
+    "interface-name": false,
     "interface-over-type-literal": false,
+    "max-classes-per-file": false,
+    "member-access": false,
+    "no-unused-expression": false,
+    "prefer-const": false,
     "quotemark": [true, "single"],
     "semicolon": false
   },
