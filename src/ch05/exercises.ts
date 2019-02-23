@@ -95,3 +95,36 @@ let l: F.X
 l = E.X as E.X
 
 /* No. For an enum member to be assignable to another enum member, it has to come from the same enum. Though both members are named X and have the same string value X, because they're defined on different enums, they are not assignable to one another. */
+
+// 2. If I have an object type type O = {a: {b: {c: string}}}, what’s the type of keyof O? What about O['a']['b']?
+
+type O = {a: {b: {c: string}}}
+type P = keyof O // 'a'
+type Q = O['a']['b'] // {c: string}
+
+// 3. Write an Exclusive<T, U> type that computes the types that are in either T or U, but not both. For example, Exclusive<1 | 2 | 3, 2 | 3 | 4> should resolve to 1 | 4. Write out step-by-step how the typechecker evaluates Exclusive<1 | 2, 2 | 4>.
+
+type Exclusive<T, U> = Exclude<T, U> | Exclude<U, T>
+
+type R = Exclusive<1 | 2 | 3, 2 | 3 | 4> // 1 | 4
+type U = Exclusive<1 | 2, 2 | 4>
+
+/*
+  1. Start with Exclusive<1 | 2, 2 | 4>
+  2. Substitute. Exclude<1 | 2, 2 | 4> | Exclude<2 | 4, 1 | 2>
+  3. Substitute. (1 | 2 extends 2 | 4 ? never : 1 | 2) | (2 | 4 extends 1 | 2 ? never : 2 | 4)
+  4. Distribute. (1 extends 2 | 4 ? never : 1) | (2 extends 2 | 4 ? never : 2) | (2 extends 1 | 2 ? never : 2) | (4 extends 1 | 2 ? never : 4)
+  5. Simplify. 1 | never | never | 4
+  6. Simplify. 1 | 4
+*/
+
+// 4. Rewrite the example (from Definite Assignment Assertions) to avoid the definite assignment assertion.
+
+let globalCache = new Map<string, string>()
+
+let userId = fetchUser()
+userId.toUpperCase()
+
+function fetchUser() {
+  return globalCache.get('userId')
+}
