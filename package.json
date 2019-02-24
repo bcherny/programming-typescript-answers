@@ -13,6 +13,7 @@
     "typescript": "^3.3.3333"
   },
   "devDependencies": {
+    "@types/node": "^11.9.5",
     "prettier": "^1.16.4",
     "tslint-config-prettier": "^1.18.0"
   }
