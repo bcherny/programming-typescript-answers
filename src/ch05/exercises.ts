@@ -1,3 +1,5 @@
+export default null // Force module mode
+
 // 1. For each of the following pairs of types, decide if the first type is assignable to the second type, and why or why not. Think about these in terms of subtyping and variance, and refer to the rules at the start of the chapter if you’re unsure (if you’re still unsure, just type it into your code editor to check!):
 
 // 1a. 1 and number
@@ -120,7 +122,11 @@ type U = Exclusive<1 | 2, 2 | 4>
 
 // 4. Rewrite the example (from Definite Assignment Assertions) to avoid the definite assignment assertion.
 
-let globalCache = new Map<string, string>()
+let globalCache = {
+  get(key: string) {
+    return 'user'
+  }
+}
 
 let userId = fetchUser()
 userId.toUpperCase()

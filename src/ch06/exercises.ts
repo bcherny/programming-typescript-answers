@@ -1,3 +1,5 @@
+export default null // Force module mode
+
 // 1. Design a way to handle errors for the following API, using one of the patterns from this chapter. In this API, every operation might fail — feel free to update the API’s method signatures to allow for Errs (or don’t, if you prefer). Think about how you might perform a sequence of actions while handling errors that come up (eg. getting the logged in user’s ID, then getting their list of friends).
 
 type UserID = unknown

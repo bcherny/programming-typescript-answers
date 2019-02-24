@@ -1,3 +1,5 @@
+export default null // Force module mode
+
 // 1. Which parts of a function’s type signature does TypeScript infer: the parameters, the return type, or both?
 
 /* TypeScript always infers a function's return type. TypeScript sometimes

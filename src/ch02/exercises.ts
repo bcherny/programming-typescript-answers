@@ -1,3 +1,5 @@
+export default null // Force module mode
+
 // 1. For each of these values, what type will TypeScript infer?
 
 // 1a
@@ -38,7 +40,7 @@ i's type is the type literal 3. The type of 4 is the type literal 4, which is no
 let j = [1, 2, 3]
 j.push(4)
 j.push('5') // Error TS2345: Argument of type '"5"' is not
-            // assignable to parameter of type 'number'.
+// assignable to parameter of type 'number'.
 
 /*
 Since j was initialized with a set of numbers, TypeScript inferred j's type as number[].
