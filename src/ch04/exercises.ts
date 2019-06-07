@@ -1,143 +1,91 @@
 export default null // Force module mode
 
-// 1. What’s the difference between a class and an interface?
+// 1. Which parts of a function’s type signature does TypeScript infer: the parameters, the return type, or both?
 
-/* A class can have implementations, initialized class fields, and visibility modifiers. It also generates JavaScript code, so it supports instanceof checks at runtime. A class defines both a type and a value. An interface just defines a type, doesn't generate any JavaScript code, can only contain type-level members, and can't contain use modifiers. */
+/* TypeScript always infers a function's return type. TypeScript sometimes
+infers a function's parameter types, if it can infer them from context (for
+example, if the function is a callback). */
 
-// 2. When you mark a class' constructor as `private`, that means you can't instantiate or extend the class. What happens when you mark it as `protected` instead? Play around with this in your code editor, and see if you can figure it out.
+// 2. Is JavaScript’s arguments object typesafe? If not, what can you use instead?
 
-class A {
-  protected constructor() {}
+/* arguments is not typesafe. Instead, you should spread your parameters:
+
+Before: function f() { console.log(arguments) }
+
+After: function f(...args: unknown[]) { console.log(args) }
+*/
+
+// 3. I want the ability to book a vacation that starts immediately. Update the
+// overloaded reserve function from earlier in this chapter (Overloaded Function
+// Types) with a third call signature that takes just a destination, without an
+// explicit start date.
+
+type Reservation = unknown
+
+type Reserve = {
+  (from: Date, to: Date, destination: string): Reservation
+  (from: Date, destination: string): Reservation
+  (destination: string): Reservation
 }
 
-class B extends A {} // ok
-new A() // error
-new B() // error
-
-/* Unlike a class with a private constructor, a class with a protected constructor can be extended. Neither a class with a private constructor nor a class with a protected constructor can be new-ed. */
-
-// 3. Extend the Factory Pattern implementation we developed (Factory Pattern) to make it safer, at the expense of breaking the abstraction a bit. Update the implementation so that a consumer knows at compile time that calling Shoe.create('boot') returns a Boot, and Shoe.create('balletFlat') returns a BalletFlat (rather than both returning a Shoe). Hint: Think back to [function-overloads].
-
-type Shoe = {
-  purpose: string
-}
-
-class BalletFlat implements Shoe {
-  purpose = 'dancing'
-}
-
-class Boot implements Shoe {
-  purpose = 'woodcutting'
-}
-
-class Sneaker implements Shoe {
-  purpose = 'walking'
-}
-
-type ShoeCreator = {
-  create(type: 'balletFlat'): BalletFlat
-  create(type: 'boot'): Boot
-  create(type: 'sneaker'): Sneaker
-}
-
-let Shoe: ShoeCreator = {
-  create(type: 'balletFlat' | 'boot' | 'sneaker'): Shoe {
-    switch (type) {
-      case 'balletFlat':
-        return new BalletFlat()
-      case 'boot':
-        return new Boot()
-      case 'sneaker':
-        return new Sneaker()
-    }
+let reserve: Reserve = (
+  fromOrDestination: Date | string,
+  toOrDestination?: Date | string,
+  destination?: string
+) => {
+  if (
+    fromOrDestination instanceof Date &&
+    toOrDestination instanceof Date &&
+    destination !== undefined
+  ) {
+    // Book a one-way trip
+  } else if (
+    fromOrDestination instanceof Date &&
+    typeof toOrDestination === 'string'
+  ) {
+    // Book a round trip
+  } else if (typeof fromOrDestination === 'string') {
+    // Book a trip right away
   }
 }
 
-Shoe.create('balletFlat') // BalletFlat
-Shoe.create('boot') // Boot
-Shoe.create('sneaker') // Sneaker
+// 4. [Hard] Update our call implementation from earlier in the chapter (Using
+// Bounded Polymorphism to Model Arity) to only work for functions whose second
+// argument is a string. For all other functions, your implementation should
+// fail at compile time.
 
-// 4. [Hard] As an exercise, think about how you might design a typesafe builder pattern. Extend the Builder pattern Builder Pattern example from earlier in this chapter to:
-
-// 4a. Guarantee at compile time that someone can’t call .send() before setting at least URL and method. Would it be easier to make this guarantee if you also force the user to call methods in a specific order? (Hint: what can you return instead of this?)
-
-class RequestBuilder {
-  protected data: object | null = null
-  protected method: 'get' | 'post' | null = null
-  protected url: string | null = null
-
-  setMethod(method: 'get' | 'post'): RequestBuilderWithMethod {
-    return new RequestBuilderWithMethod().setMethod(method).setData(this.data)
-  }
-  setData(data: object | null): this {
-    this.data = data
-    return this
-  }
+function call<T extends [unknown, string, ...unknown[]], R>(
+  f: (...args: T) => R,
+  ...args: T
+): R {
+  return f(...args)
 }
 
-class RequestBuilderWithMethod extends RequestBuilder {
-  setMethod(method: 'get' | 'post' | null): this {
-    this.method = method
-    return this
-  }
-  setURL(url: string): RequestBuilderWithMethodAndURL {
-    return new RequestBuilderWithMethodAndURL()
-      .setMethod(this.method)
-      .setURL(url)
-      .setData(this.data)
-  }
+function fill(length: number, value: string): string[] {
+  return Array.from({length}, () => value)
 }
 
-class RequestBuilderWithMethodAndURL extends RequestBuilderWithMethod {
-  setURL(url: string): this {
-    this.url = url
-    return this
-  }
-  send() {
-    // ...
-  }
+call(fill, 10, 'a') // string[]
+
+// 5. Implement a small typesafe assertion library, is. Start by sketching out
+// your types. When you’re done, I should be able to use it like this:
+
+// Compare a string and a string
+is('string', 'otherstring') // false
+
+// Compare a boolean and a boolean
+is(true, false) // false
+
+// Compare a number and a number
+is(42, 42) // true
+
+// Comparing two different types should give a compile-time error
+is(10, 'foo') // Error TS2345: Argument of type '"foo"' is not assignable
+// to parameter of type 'number'.
+
+// [Hard] I should be able to pass any number of arguments
+is([1], [1, 2], [1, 2, 3]) // false
+
+function is<T>(...args: T[]): boolean {
+  return args.every(_ => _ === args[0])
 }
-
-new RequestBuilder()
-  .setMethod('get')
-  .setData({})
-  .setURL('foo.com')
-  .send()
-
-// 4b. [Harder] How would you change your design if you wanted to make this guarantee, but still let people call methods in any order?
-
-// (This answer courtesy of @albertywu)
-
-interface BuildableRequest {
-  data?: object
-  method: 'get' | 'post'
-  url: string
-}
-
-class RequestBuilder2 {
-  data?: object
-  method?: 'get' | 'post'
-  url?: string
-
-  setData(data: object): this & Pick<BuildableRequest, 'data'> {
-    return Object.assign(this, {data})
-  }
-
-  setMethod(method: 'get' | 'post'): this & Pick<BuildableRequest, 'method'> {
-    return Object.assign(this, {method})
-  }
-
-  setURL(url: string): this & Pick<BuildableRequest, 'url'> {
-    return Object.assign(this, {url})
-  }
-
-  build(this: BuildableRequest) {
-    return this
-  }
-}
-
-new RequestBuilder2()
-  .setData({})
-  .setMethod('post') // Try removing me!
-  .setURL('bar') // Try removing me!
-  .build()

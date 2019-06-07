@@ -1,91 +1,67 @@
 export default null // Force module mode
 
-// 1. Which parts of a function’s type signature does TypeScript infer: the parameters, the return type, or both?
+// 1. For each of these values, what type will TypeScript infer?
 
-/* TypeScript always infers a function's return type. TypeScript sometimes
-infers a function's parameter types, if it can infer them from context (for
-example, if the function is a callback). */
+// 1a
+let a = 1042 // number
 
-// 2. Is JavaScript’s arguments object typesafe? If not, what can you use instead?
+// 1b
+let b = 'apples and oranges' // string
 
-/* arguments is not typesafe. Instead, you should spread your parameters:
+// 1c
+const c = 'pineapples' // 'pineapples'
 
-Before: function f() { console.log(arguments) }
+// 1d
+let d = [true, true, false] // boolean[]
 
-After: function f(...args: unknown[]) { console.log(args) }
+// 1e
+let e = {type: 'ficus'} // {type: string}
+
+// 1f
+let f = [1, false] // (number | boolean)[]
+
+// 1g
+const g = [3] // number[]
+
+// 1h
+let h = null // any
+
+// 2. Why does each of these throw the error it does?
+
+// 2a
+let i: 3 = 3
+i = 4 // Error TS2322: Type '4' is not assignable to type '3'.
+
+/*
+i's type is the type literal 3. The type of 4 is the type literal 4, which is not assignable to the type literal 3.
 */
 
-// 3. I want the ability to book a vacation that starts immediately. Update the
-// overloaded reserve function from earlier in this chapter (Overloaded Function
-// Types) with a third call signature that takes just a destination, without an
-// explicit start date.
+// 2b
+let j = [1, 2, 3]
+j.push(4)
+j.push('5') // Error TS2345: Argument of type '"5"' is not
+// assignable to parameter of type 'number'.
 
-type Reservation = unknown
+/*
+Since j was initialized with a set of numbers, TypeScript inferred j's type as number[].
+The type of '5' is the type literal '5', which is not assignable to number.
+*/
 
-type Reserve = {
-  (from: Date, to: Date, destination: string): Reservation
-  (from: Date, destination: string): Reservation
-  (destination: string): Reservation
-}
+// 2c
+let k: never = 4 // Error TS2322: Type '4' is not assignable to type 'never'.
 
-let reserve: Reserve = (
-  fromOrDestination: Date | string,
-  toOrDestination?: Date | string,
-  destination?: string
-) => {
-  if (
-    fromOrDestination instanceof Date &&
-    toOrDestination instanceof Date &&
-    destination !== undefined
-  ) {
-    // Book a one-way trip
-  } else if (
-    fromOrDestination instanceof Date &&
-    typeof toOrDestination === 'string'
-  ) {
-    // Book a round trip
-  } else if (typeof fromOrDestination === 'string') {
-    // Book a trip right away
-  }
-}
+/*
+never is the bottom type. That means it's assignable to every other type, but no type is
+assignable to never.
+*/
 
-// 4. [Hard] Update our call implementation from earlier in the chapter (Using
-// Bounded Polymorphism to Model Arity) to only work for functions whose second
-// argument is a string. For all other functions, your implementation should
-// fail at compile time.
+// 2d
+let l: unknown = 4
+let m = l * 2 // Error TS2571: Object is of type 'unknown'.
 
-function call<T extends [unknown, string, ...unknown[]], R>(
-  f: (...args: T) => R,
-  ...args: T
-): R {
-  return f(...args)
-}
-
-function fill(length: number, value: string): string[] {
-  return Array.from({length}, () => value)
-}
-
-call(fill, 10, 'a') // string[]
-
-// 5. Implement a small typesafe assertion library, is. Start by sketching out
-// your types. When you’re done, I should be able to use it like this:
-
-// Compare a string and a string
-is('string', 'otherstring') // false
-
-// Compare a boolean and a boolean
-is(true, false) // false
-
-// Compare a number and a number
-is(42, 42) // true
-
-// Comparing two different types should give a compile-time error
-is(10, 'foo') // Error TS2345: Argument of type '"foo"' is not assignable
-// to parameter of type 'number'.
-
-// [Hard] I should be able to pass any number of arguments
-is([1], [1, 2], [1, 2, 3]) // false
-
-function is<T>(...args: T[]): boolean {
-  return args.every(_ => _ === args[0])
-}
+/*
+unknown represent a value that could be anything at runtime. To prove to TypeScript that what
+you're doing is safe, you have to first prove to TypeScript that a value of type unknown actually
+has a more specific subtype. You do that by refining the value using typeof, instanceof, or
+another type query or type guard.
+*/
