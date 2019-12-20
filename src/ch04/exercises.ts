@@ -86,6 +86,6 @@ is(10, 'foo') // Error TS2345: Argument of type '"foo"' is not assignable
 // [Hard] I should be able to pass any number of arguments
 is([1], [1, 2], [1, 2, 3]) // false
 
-function is<T>(...args: T[]): boolean {
-  return args.every(_ => _ === args[0])
+function is<T>(a: T, ...b: [T, ...T[]]): boolean {
+  return b.every(_ => _ === a)
 }
