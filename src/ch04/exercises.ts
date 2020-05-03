@@ -8,7 +8,7 @@ example, if the function is a callback). */
 
 // 2. Is JavaScript’s arguments object typesafe? If not, what can you use instead?
 
-/* arguments is not typesafe. Instead, you should spread your parameters:
+/* arguments is not typesafe. Instead, you should use a rest parameter:
 
 Before: function f() { console.log(arguments) }
 
