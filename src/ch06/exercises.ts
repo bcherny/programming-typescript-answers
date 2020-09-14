@@ -66,7 +66,7 @@ Is {a: {b: [string]}} assignable to {a: {b: [number | string]}}? Yes, if:
 
 // 1i. (a: number) => string and (b: number) => string
 
-let i: (b: number) => string
+let i: (a: number) => string
 i = ((b: number) => 'c') as (b: number) => string
 
 /* Yes. For a function to be assignable to another function, each of its parameters should be >: the other function's parameters, and its return type should be <: the other function's return type. number is >: number, and string is <: string, so the function type is assignable. */
